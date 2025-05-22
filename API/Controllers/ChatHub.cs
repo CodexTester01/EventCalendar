@@ -1,15 +1,19 @@
 using Application.Comments;
+using Microsoft.EntityFrameworkCore;
 using MediatR;
 using Microsoft.AspNetCore.SignalR;
+using Persistence;
 
 namespace API.Controllers
 {
     public class ChatHub : Hub
     {
         private readonly IMediator _mediator;
-        public ChatHub(IMediator mediator)
+        private readonly Persistence.DataContext _context;
+        public ChatHub(IMediator mediator, Persistence.DataContext context)
         {
             _mediator = mediator;
+            _context = context;
 
         }
 
@@ -19,6 +23,17 @@ namespace API.Controllers
 
             await Clients.Group(command.ActivityId.ToString())
                 .SendAsync("ReceiveComment", comment.Value);
+
+            var hostId = await _context.ActivityAttendees
+                .Where(x => x.ActivityId == command.ActivityId && x.IsHost)
+                .Select(x => x.AppUserId)
+                .FirstOrDefaultAsync();
+
+            if (hostId != null && hostId != Context.UserIdentifier)
+            {
+                await Clients.User(hostId)
+                    .SendAsync("ReceiveNotification", comment.Value);
+            }
 
         }
 
