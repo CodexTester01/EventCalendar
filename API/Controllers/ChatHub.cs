@@ -18,7 +18,10 @@ namespace API.Controllers
             _mediator = mediator;
             _context = context;
             _notificationHub = notificationHub;
-
+        public ChatHub(IMediator mediator, Persistence.DataContext context)
+        {
+            _mediator = mediator;
+            _context = context;
         }
 
         public async Task SendComment(Create.Command command)
@@ -60,6 +63,8 @@ namespace API.Controllers
                     await _notificationHub.Clients.User(hostId)
                         .SendAsync("ReceiveNotification", dto);
                 }
+                await Clients.User(hostId)
+                    .SendAsync("ReceiveNotification", comment.Value);
             }
 
         }
