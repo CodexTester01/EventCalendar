@@ -6,6 +6,7 @@ import ModalStore from "./modalStore";
 import ProfileStore from "./profileStore";
 import CommentStore from "./commentStore";
 
+import NotificationStore from "./notificationStore";
 interface Store {
     activityStore: ActivityStore
     commonStore: CommonStore
@@ -13,6 +14,7 @@ interface Store {
     modalStore: ModalStore
     profileStore: ProfileStore
     commentStore: CommentStore
+    notificationStore: NotificationStore
 }
 export const store: Store = {
     activityStore: new ActivityStore(),
@@ -20,6 +22,7 @@ export const store: Store = {
     userStore: new UserStore(),
     modalStore: new ModalStore(),
     profileStore: new ProfileStore(),
+    notificationStore: new NotificationStore(),
     commentStore: new CommentStore()
 }
 

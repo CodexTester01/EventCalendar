@@ -46,6 +46,8 @@ namespace Application.Core
                .ForMember(d => d.Title, o => o.MapFrom(s => s.Activity.Title))
                .ForMember(d => d.Category, o => o.MapFrom(s => s.Activity.Category))
                .ForMember(d => d.HostUsername, o => o.MapFrom(s => s.Activity.Attendees.FirstOrDefault(x => x.IsHost).AppUser.UserName));
+
+            CreateMap<Notification, Notifications.NotificationDto>();
         }
     }
 }
