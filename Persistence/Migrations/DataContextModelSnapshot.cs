@@ -401,6 +401,16 @@ namespace Persistence.Migrations
                     b.Navigation("Author");
                 });
 
+            modelBuilder.Entity("Domain.Notification", b =>
+                {
+                    b.HasOne("Domain.AppUser", "Recipient")
+                        .WithMany("Notifications")
+                        .HasForeignKey("RecipientId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Recipient");
+                });
+
             modelBuilder.Entity("Domain.Photo", b =>
                 {
                     b.HasOne("Domain.AppUser", null)
