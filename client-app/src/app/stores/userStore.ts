@@ -19,6 +19,7 @@ export default class UserStore {
             const user = await agent.Account.login(creds)
             store.commonStore.setToken(user.token)
             runInAction(() => this.user = user)
+            store.notificationStore.createHubConnection()
             router.navigate('/activities')
             store.modalStore.closeModal()
         } catch (error) {
@@ -30,6 +31,7 @@ export default class UserStore {
             const user = await agent.Account.register(creds)
             store.commonStore.setToken(user.token)
             runInAction(() => this.user = user)
+            store.notificationStore.createHubConnection()
             router.navigate('/activities')
             store.modalStore.closeModal()
         } catch (error) {
@@ -39,6 +41,7 @@ export default class UserStore {
 
     logout = () => {
         store.commonStore.setToken(null)
+        store.notificationStore.clear()
         this.user = null
         router.navigate('/') // home page redirection
     }
@@ -46,6 +49,7 @@ export default class UserStore {
         try {
             const user = await agent.Account.current();
             runInAction(() => this.user = user)
+            store.notificationStore.createHubConnection()
         } catch (error) {
             console.log(error)
         }

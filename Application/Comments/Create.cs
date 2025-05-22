@@ -54,6 +54,20 @@ namespace Application.Comments
                 };
                 activity.Comments.Add(comment);
 
+                var hostId = await _context.ActivityAttendees
+                    .Where(x => x.ActivityId == activity.Id && x.IsHost)
+                    .Select(x => x.AppUserId)
+                    .FirstOrDefaultAsync();
+                if (hostId != null && hostId != user.Id)
+                {
+                    var notification = new Notification
+                    {
+                        RecipientId = hostId,
+                        Message = $"{user.DisplayName} replied to your activity '{activity.Title}'"
+                    };
+                    _context.Notifications.Add(notification);
+                }
+
                 var success = await _context.SaveChangesAsync() > 0;
 
                 if (success) return Result<CommentDto>.Success(_mapper.Map<CommentDto>(comment));
