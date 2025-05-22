@@ -1,4 +1,5 @@
 using Application.Comments;
+using Application.Notifications;
 using Microsoft.EntityFrameworkCore;
 using MediatR;
 using Microsoft.AspNetCore.SignalR;
@@ -10,11 +11,17 @@ namespace API.Controllers
     {
         private readonly IMediator _mediator;
         private readonly Persistence.DataContext _context;
+        private readonly IHubContext<NotificationHub> _notificationHub;
+
+        public ChatHub(IMediator mediator, Persistence.DataContext context, IHubContext<NotificationHub> notificationHub)
+        {
+            _mediator = mediator;
+            _context = context;
+            _notificationHub = notificationHub;
         public ChatHub(IMediator mediator, Persistence.DataContext context)
         {
             _mediator = mediator;
             _context = context;
-
         }
 
         public async Task SendComment(Create.Command command)
@@ -31,6 +38,31 @@ namespace API.Controllers
 
             if (hostId != null && hostId != Context.UserIdentifier)
             {
+                var title = await _context.Activities
+                    .Where(x => x.Id == command.ActivityId)
+                    .Select(x => x.Title)
+                    .FirstOrDefaultAsync();
+
+                var message = $"{comment.Value.DisplayName} replied to your activity '{title}'";
+
+                var notification = await _context.Notifications
+                    .Where(n => n.RecipientId == hostId && n.Message == message)
+                    .OrderByDescending(n => n.CreatedAt)
+                    .FirstOrDefaultAsync();
+
+                if (notification != null)
+                {
+                    var dto = new NotificationDto
+                    {
+                        Id = notification.Id,
+                        Message = notification.Message,
+                        CreatedAt = notification.CreatedAt,
+                        IsRead = notification.IsRead
+                    };
+
+                    await _notificationHub.Clients.User(hostId)
+                        .SendAsync("ReceiveNotification", dto);
+                }
                 await Clients.User(hostId)
                     .SendAsync("ReceiveNotification", comment.Value);
             }
